@@ -214,7 +214,7 @@ def compute_objective_exact(
 
         batch_ids = torch.stack(ids_list).to(device)
         with torch.no_grad():
-            batch_scores = model(batch_ids).squeeze(-1)
+            batch_scores = model(batch_ids).reshape(-1)
         all_scores.append(batch_scores)
 
     scores = torch.cat(all_scores, dim=0)
@@ -278,10 +278,10 @@ def compute_batch_loss(
 
     # Forward pass
     entry_scores_all = (
-        model(all_entry_ids).squeeze(-1) if all_entry_ids is not None else torch.tensor([], device=device)
+        model(all_entry_ids).reshape(-1) if all_entry_ids is not None else torch.tensor([], device=device)
     )
     rank_scores_all = (
-        model(all_rank_ids).squeeze(-1) if all_rank_ids is not None else torch.tensor([], device=device)
+        model(all_rank_ids).reshape(-1) if all_rank_ids is not None else torch.tensor([], device=device)
     )
 
     # Per‑state loss

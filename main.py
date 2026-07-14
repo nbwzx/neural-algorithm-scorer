@@ -15,7 +15,7 @@ from torch.utils.data import DataLoader, Dataset
 from tqdm import tqdm
 from loguru import logger
 
-from utils import load_algorithm_data, load_ranking_reference, split_states
+from utils import load_algorithm_data, load_ranking_reference, split_states, ActionTokenizer
 from model import AlgorithmScorer
 
 
@@ -54,44 +54,6 @@ CONFIG = {
     # ---- Progress ----
     "SHOW_PROGRESS": True,
 }
-
-
-# ---------- Tokenizer ---------------------------------------------------------
-class ActionTokenizer:
-    """Simple tokenizer for Rubik's cube algorithms."""
-
-    def __init__(self, sequences: List[str]):
-        """
-        Build vocabulary from all tokens appearing in the given sequences.
-
-        Special tokens: <PAD>, <UNK> are added first.
-        """
-        tokens = set()
-        for seq in sequences:
-            tokens.update(seq.split())
-
-        self.pad_token = "<PAD>"
-        self.unk_token = "<UNK>"
-        self.special_tokens = [self.pad_token, self.unk_token]
-
-        self.token_to_id = {tok: i for i, tok in enumerate(self.special_tokens)}
-        for tok in sorted(tokens):
-            if tok not in self.token_to_id:
-                self.token_to_id[tok] = len(self.token_to_id)
-
-        self.id_to_token = {i: tok for tok, i in self.token_to_id.items()}
-        self.vocab_size = len(self.token_to_id)
-
-    def encode(self, sequence: str, max_len: int) -> List[int]:
-        """Tokenise and pad/truncate to max_len."""
-        tokens = sequence.split()
-        ids = [self.token_to_id.get(tok, self.token_to_id[self.unk_token]) for tok in tokens]
-        if len(ids) < max_len:
-            ids += [self.token_to_id[self.pad_token]] * (max_len - len(ids))
-        else:
-            ids = ids[:max_len]
-        return ids
-
 
 # ---------- Dataset -----------------------------------------------------------
 class StateDataset(Dataset):

@@ -100,10 +100,15 @@ def main():
     alg_data = {s: alg_data[s] for s in common_states}
     rank_ranks = {s: rank_ranks[s] for s in common_states}
 
-    _, val_states = split_states(common_states, seed=SEED, split_ratio=SPLIT_RATIO)
+    _, _, test_states = split_states(
+        common_states, 
+        seed=SEED, 
+        train_ratio=0.75, 
+        val_ratio=0.15
+    )
 
     metrics = ["stm", "qtm", "wmc", "mcc"]
-    results = {m: baseline_objective(val_states, alg_data, rank_ranks, NUM_REF_ALGORITHMS, m) for m in metrics}
+    results = {m: baseline_objective(test_states, alg_data, rank_ranks, NUM_REF_ALGORITHMS, m) for m in metrics}
 
     print("📊 Baseline objectives (validation set):")
     print(", ".join(f"{m} = {results[m]:.6f}" for m in metrics))

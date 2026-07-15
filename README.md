@@ -103,7 +103,7 @@ The total number of parameters is approximately 0.2 million, allowing fast infer
 
 ### 5.1 Training Optimisation
 
-States are split 80/20 into training and validation sets with a fixed random seed (`SEED = 42`) to ensure reproducibility. The tokeniser is built from the union of all algorithms, and token caching persists across epochs (and is saved in checkpoints) to avoid recomputation.
+States are split into training, validation, and test sets (75%/15%/10%) using a fixed random seed (`SEED = 42`) to ensure reproducibility. The tokeniser is built from the union of all algorithms, and token caching persists across epochs (and is saved in checkpoints) to avoid recomputation.
 
 We use AdamW with learning rate $1\times10^{-3}$ (`LR = 1e-3`) and weight decay $0.01$ (`WEIGHT_DECAY = 0.01`, applied to all parameters except biases and layer‑norm weights). Gradients are clipped to norm 1.0. A batch consists of 16 states (`BATCH_SIZE = 16`); all candidate and reference algorithms are concatenated and processed in a single forward pass (dynamic batching) to reduce overhead.
 
@@ -113,23 +113,23 @@ We apply **ReduceLROnPlateau** (factor 0.5, patience 3) on the validation object
 
 <img src="best/loss_curves.png" width="80%" alt="Training and validation loss curves"/>
 
-The training loss drops from 0.030297 to 0.004805 over the course of training, while the validation loss follows a similar downward path with only modest fluctuations—suggesting stable convergence without overfitting. Plateaus in the validation loss trigger automatic learning rate reductions, which help the optimizer escape flat regions and continue making progress, as reflected in the sustained decline of both curves.
+The training loss drops from 0.031924 to 0.005136 over the course of training, while the validation loss follows a similar downward path with only modest fluctuations—suggesting stable convergence without overfitting. Plateaus in the validation loss trigger automatic learning rate reductions, which help the optimizer escape flat regions and continue making progress, as reflected in the sustained decline of both curves.
 
 <img src="best/objective_curves.png" width="80%" alt="Training and validation objective curves"/>
 
-The validation objective, our primary metric, improves steadily from an initial value of 0.015139 to a best of 0.005456.
+The validation objective, our primary metric, improves steadily from an initial value of 0.015929 to a best of 0.005921.
 
 ### 5.3 Quantitative Results
 
-Our neural algorithm scorer consistently outperforms all baselines on validation objectives. The numbers below are from a representative run using the default configuration.
+Our neural algorithm scorer consistently outperforms all baselines on the held-out test set. The numbers below are from a representative run using the default configuration.
 
-| Method                          | Val Objective |
-|---------------------------------|---------------|
-| STM (slice turn metric)         | 0.135415      |
-| QTM (quarter turn metric)       | 0.082465      |
-| WMC (weighted move count)       | 0.029283      |
-| MCC (movecount coefficient)     | 0.024531      |
-| **Our model (Neural Algorithm Scorer)**   | **0.005456**  |
+| Method                          | Test Objective |
+|---------------------------------|----------------|
+| STM (slice turn metric)         | 0.132985       |
+| QTM (quarter turn metric)       | 0.085444       |
+| WMC (weighted move count)       | 0.031352       |
+| MCC (movecount coefficient)     | 0.025986       |
+| **Our model (Neural Algorithm Scorer)**   | **0.005813**   |
 
 Smaller values are better. Our model captures non‑length‑based quality signals and generalises well, as evidenced by the larger gap on the validation set.
 

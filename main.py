@@ -506,11 +506,14 @@ def main():
     rank_ranks = {s: rank_ranks[s] for s in common_states}
     logger.info(f"Loaded {len(alg_data)} common states.")
 
-    # ---- Train/validation split ----
-    train_states, val_states = split_states(
-        common_states, seed=config["SEED"], split_ratio=0.8
+    # ---- Train/validation/Test split ----
+    train_states, val_states, test_states = split_states(
+        common_states,
+        seed=config["SEED"],
+        train_ratio=0.75,
+        val_ratio=0.15
     )
-    logger.info(f"Train states: {len(train_states)}, Val states: {len(val_states)}")
+    logger.info(f"Train: {len(train_states)}, Val: {len(val_states)}, Test: {len(test_states)}")
 
     # ---- Tokenizer ----
     if os.path.exists(tokenizer_file):
@@ -581,6 +584,22 @@ def main():
         checkpoint_file=checkpoint_file,
         best_model_file=best_model_file,
     )
+    logger.info("=" * 70)
+    logger.info("Performing FINAL evaluation on the hold-out TEST set...")
+
+    test_obj = compute_objective_exact(
+        model,
+        alg_data,
+        rank_ranks,
+        config["NUM_REF_ALGORITHMS"],
+        device,
+        tokenizer,
+        config["MAX_LEN"],
+        states=test_states,
+        cache={},
+    )
+    logger.success(f"FINAL TEST OBJECTIVE: {test_obj:.6f}.")
+    logger.info("=" * 70)
 
     # ---- Final save ----
     with open(tokenizer_file, "wb") as f:

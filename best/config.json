@@ -16,6 +16,6 @@
     "TEMPERATURE": 0.1,
     "NUM_REF_ALGORITHMS": 200,
     "SEED": 42,
-    "RUN_DIR": "best",
+    "RUN_DIR": null,
     "SHOW_PROGRESS": true
 }

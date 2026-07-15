@@ -48,23 +48,45 @@ def load_ranking_reference(ranking_path: str) -> Dict[str, List[str]]:
         return json.load(f)
 
 
-def split_states(states: List[str], seed: int = 42, split_ratio: float = 0.8) -> Tuple[List[str], List[str]]:
+
+def split_states(
+    states: List[str], 
+    seed: int = 42, 
+    train_ratio: float = 0.75, 
+    val_ratio: float = 0.15
+) -> Tuple[List[str], List[str], List[str]]:
     """
-    Shuffle and split states into train/validation lists.
+    Shuffle and split states into train/validation/test lists.
 
     Args:
         states: list of state identifiers.
         seed: random seed for reproducibility.
-        split_ratio: fraction of states used for training.
+        train_ratio: fraction of states used for training.
+        val_ratio: fraction of states used for validation.
 
     Returns:
-        (train_states, val_states)
+        (train_states, val_states, test_states)
     """
+
+    if train_ratio + val_ratio >= 1.0:
+        raise ValueError(
+            f"train_ratio + val_ratio ({train_ratio + val_ratio}) must be < 1.0 "
+            "to leave a valid test set."
+        )
+        
     random.seed(seed)
     shuffled = sorted(states)          # deterministic ordering before shuffle
     random.shuffle(shuffled)
-    split_idx = int(split_ratio * len(shuffled))
-    return shuffled[:split_idx], shuffled[split_idx:]
+    
+    n = len(shuffled)
+    train_end = int(train_ratio * n)
+    val_end = int((train_ratio + val_ratio) * n)
+    
+    train_states = shuffled[:train_end]
+    val_states = shuffled[train_end:val_end]
+    test_states = shuffled[val_end:]
+    
+    return train_states, val_states, test_states
 
 
 class ActionTokenizer:

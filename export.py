@@ -118,6 +118,11 @@ def score_algorithms_batch(
                 scores.extend(batch_scores)
                 pbar.update(1)
 
+
+    token_map = tokenizer.stoi
+    for i, alg in enumerate(algs):
+        if any(tok not in token_map for tok in alg.split()):
+            scores[i] = 1000.0
     return scores
 
 

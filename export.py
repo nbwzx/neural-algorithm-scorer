@@ -100,6 +100,7 @@ def score_algorithms_batch(
     if total == 0:
         return []
 
+    token_map = tokenizer.stoi
     num_batches = math.ceil(total / batch_size)
     scores = []
 
@@ -115,14 +116,13 @@ def score_algorithms_batch(
                     ids_list.append(ids)
                 input_tensor = torch.tensor(ids_list, dtype=torch.long)
                 batch_scores = model(input_tensor).squeeze(-1).flatten().tolist()
+
+                for i, alg in enumerate(batch):
+                    if any(tok not in token_map for tok in alg.split()):
+                        batch_scores[i] = 1000.0
                 scores.extend(batch_scores)
                 pbar.update(1)
 
-
-    token_map = tokenizer.stoi
-    for i, alg in enumerate(algs):
-        if any(tok not in token_map for tok in alg.split()):
-            scores[i] = 1000.0
     return scores
 
 
